@@ -89,28 +89,28 @@ package org.robotlegs.utilities.variance.base
 				return new <IMediator>[];
 			}
 			
-			var viewTypes:Vector.<Class> = retrieveViewTypes(viewComponent);
-			var mediatorTypes:Vector.<Class> = retrieveMediatorClasses(viewComponent);
-			var mediatorNames:Vector.<String> = retrieveMediatorNames(viewComponent, mediatorTypes);
+			const viewTypes:Vector.<Class> = retrieveViewTypes(viewComponent);
+			const mediatorTypes:Vector.<Class> = retrieveMediatorClasses(viewComponent);
+			const mediatorNames:Vector.<String> = retrieveMediatorNames(viewComponent, mediatorTypes);
 			
-			var mediators:Vector.<IMediator> = new <IMediator>[];
+			const mediators:Vector.<IMediator> = new <IMediator>[];
 			
-			mediatorNames.forEach(function(name:String, i:int, v:Vector.<String>):void{
+			mediatorNames.forEach(function(name:String, i:int, v:Vector.<String>):void {
 				if(name in mediatorMap)
 				{
 					mediators.push(mediatorMap[name]);
 					return;
 				}
 				
-				var mediatorType:Class = mediatorTypes[i];
+				const mediatorType:Class = mediatorTypes[i];
 				
-				viewTypes.forEach(function(viewType:Class, ... args):void{
+				viewTypes.forEach(function(viewType:Class, ... args):void {
 					injector.mapValue(viewType, viewComponent);
 				});
 				
-				var mediator:IMediator = injector.instantiate(mediatorType) as IMediator;
+				const mediator:IMediator = injector.instantiate(mediatorType) as IMediator;
 				
-				viewTypes.forEach(function(viewType:Class, ... args):void{
+				viewTypes.forEach(function(viewType:Class, ... args):void {
 					injector.unmap(viewType);
 				});
 				
@@ -133,12 +133,12 @@ package org.robotlegs.utilities.variance.base
 				return new <IMediator>[];
 			}
 			
-			var mediatorNames:Vector.<String> =
+			const mediatorNames:Vector.<String> =
 				retrieveMediatorNames(viewComponent, retrieveMediatorClasses(viewComponent));
 			
-			var mediators:Vector.<IMediator> = new <IMediator>[];
+			const mediators:Vector.<IMediator> = new <IMediator>[];
 			
-			mediatorNames.forEach(function(name:String, ... args):void{
+			mediatorNames.forEach(function(name:String, ... args):void {
 				if(!(name in mediatorMap))
 					return;
 				
@@ -158,16 +158,16 @@ package org.robotlegs.utilities.variance.base
 				return new <IMediator>[];
 			}
 			
-			var mediatorNames:Vector.<String> =
+			const mediatorNames:Vector.<String> =
 				retrieveMediatorNames(viewComponent, retrieveMediatorClasses(viewComponent));
 			
-			var mediators:Vector.<IMediator> = new <IMediator>[];
+			const mediators:Vector.<IMediator> = new <IMediator>[];
 			
-			mediatorNames.forEach(function(name:String, ... args):void{
+			mediatorNames.forEach(function(name:String, ... args):void {
 				if(!(name in mediatorMap))
 					return;
 				
-				var mediator:IMediator = mediatorMap[name];
+				const mediator:IMediator = mediatorMap[name];
 				mediator.preRemove();
 				mediator.setViewComponent(null);
 				delete mediatorMap[name];
@@ -181,7 +181,7 @@ package org.robotlegs.utilities.variance.base
 		 * Returns a Vector of Classes that represent all the mapped
 		 * <code>viewType</code>s that this <code>viewComponent</code> instance
 		 * matches.
-		 * 
+		 *
 		 * @private
 		 */
 		protected function retrieveViewTypes(viewComponent:Object):Vector.<Class>
@@ -238,9 +238,9 @@ package org.robotlegs.utilities.variance.base
 		protected function retrieveMediatorNames(viewComponent:Object,
 												 mediatorTypes:Vector.<Class>):Vector.<String>
 		{
-			var mediatorNames:Vector.<String> = new <String>[];
+			const mediatorNames:Vector.<String> = new <String>[];
 			
-			mediatorTypes.forEach(function(type:Class, ... args):void{
+			mediatorTypes.forEach(function(type:Class, ... args):void {
 				mediatorNames.push(createMediatorName(viewComponent, type))
 			});
 			
@@ -250,7 +250,7 @@ package org.robotlegs.utilities.variance.base
 		/**
 		 * Creates a semi-unique key from the combination of the given
 		 * <code>viewComponent</code> instance and the mediatorType.
-		 * 
+		 *
 		 * Note: It is feasible that two <code>viewComponent</code>s of the same
 		 * Class type can exist at the same nestLevel and with the same name
 		 * as each other. It might be worth revisiting this later to harden the
@@ -333,7 +333,13 @@ package org.robotlegs.utilities.variance.base
 		
 		override protected function onViewAdded(e:Event):void
 		{
-			var view:Object = e.target;
+			const view:Object = e.target;
+			
+			if(!applyFilters(view))
+			{
+				return;
+			}
+			
 			addedViews[view] = true;
 			
 			if(view in removedViews)
@@ -344,7 +350,13 @@ package org.robotlegs.utilities.variance.base
 		
 		protected function onViewRemoved(e:Event):void
 		{
-			var view:Object = e.target;
+			const view:Object = e.target;
+			
+			if(!applyFilters(view))
+			{
+				return;
+			}
+			
 			removedViews[view] = true;
 			
 			if(view in addedViews)

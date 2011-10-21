@@ -198,8 +198,14 @@ package org.robotlegs.utilities.variance.base
 		
 		override protected function onViewAdded(e:Event):void
 		{
-			var view:Object = e.target;
-			var type:Class = reflector.getClass(view);
+			const view:Object = e.target;
+			
+			if(!applyFilters(view))
+			{
+				return;
+			}
+			
+			const type:Class = reflector.getClass(view);
 			
 			// This is a hack... RL's MediatorMap implementation creates the 
 			// Mediator as soon as a view is added to the display list. It should
@@ -218,8 +224,14 @@ package org.robotlegs.utilities.variance.base
 		
 		override protected function onViewRemoved(e:Event):void
 		{
-			var view:Object = e.target;
-			var type:Class = reflector.getClass(view);
+			const view:Object = e.target;
+			
+			if(!applyFilters(view))
+			{
+				return;
+			}
+			
+			const type:Class = reflector.getClass(view);
 			
 			if(view in addedViews)
 				delete addedViews[view];
