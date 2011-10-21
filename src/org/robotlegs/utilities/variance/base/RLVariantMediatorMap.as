@@ -1,7 +1,7 @@
 package org.robotlegs.utilities.variance.base
 {
 	import flash.display.*;
-	import flash.events.Event;
+	import flash.events.*;
 	import flash.utils.*;
 	
 	import org.robotlegs.core.*;
@@ -14,9 +14,9 @@ package org.robotlegs.utilities.variance.base
 	 */
 	public class RLVariantMediatorMap extends VariantMediatorMap implements IMediatorMap
 	{
-		public function RLVariantMediatorMap(contextView:DisplayObjectContainer,
-											 injector:IInjector,
-											 reflector:IReflector,
+		public function RLVariantMediatorMap(contextView:DisplayObjectContainer, 
+											 injector:IInjector, 
+											 reflector:IReflector, 
 											 filter:IPackageFilters = null)
 		{
 			super(contextView, injector, reflector, filter);
@@ -25,10 +25,10 @@ package org.robotlegs.utilities.variance.base
 		protected const addExceptions:Dictionary = new Dictionary(false);
 		protected const removeExceptions:Dictionary = new Dictionary(false);
 		
-		public function mapView(viewClassOrName:*,
-								mediatorClass:Class,
-								injectViewAs:* = null,
-								autoCreate:Boolean = true,
+		public function mapView(viewClassOrName:*, 
+								mediatorClass:Class, 
+								injectViewAs:* = null, 
+								autoCreate:Boolean = true, 
 								autoRemove:Boolean = true):void
 		{
 			viewClassOrName = reflector.getClass(viewClassOrName);
@@ -76,7 +76,7 @@ package org.robotlegs.utilities.variance.base
 		
 		public function createMediator(viewComponent:Object):IMediator
 		{
-			var mediators:Vector.<IMediator> = registerMediators(viewComponent);
+			const mediators:Vector.<IMediator> = registerMediators(viewComponent);
 			return mediators.length ? mediators[0] : null
 		}
 		
@@ -87,10 +87,10 @@ package org.robotlegs.utilities.variance.base
 		
 		public function removeMediator(mediator:IMediator):IMediator
 		{
-			var mediatorName:String = createMediatorName(mediator.getViewComponent(), reflector.getClass(mediator));
+			const mediatorName:String = createMediatorName(mediator.getViewComponent(), reflector.getClass(mediator));
 			if(mediatorName in mediatorMap)
 			{
-				var mediator:IMediator = mediatorMap[mediatorName];
+				const mediator:IMediator = mediatorMap[mediatorName];
 				delete mediatorMap[mediatorName];
 				return mediator;
 			}
@@ -100,7 +100,7 @@ package org.robotlegs.utilities.variance.base
 		
 		public function removeMediatorByView(viewComponent:Object):IMediator
 		{
-			var mediators:Vector.<IMediator> = getMediators(viewComponent);
+			const mediators:Vector.<IMediator> = getMediators(viewComponent);
 			if(mediators.length > 0)
 			{
 				removeMediator(mediators[0]);
@@ -112,7 +112,7 @@ package org.robotlegs.utilities.variance.base
 		
 		public function retrieveMediator(viewComponent:Object):IMediator
 		{
-			var mediators:Vector.<IMediator> = getMediators(viewComponent);
+			const mediators:Vector.<IMediator> = getMediators(viewComponent);
 			return mediators.length ? mediators[0] : null;
 		}
 		
@@ -123,13 +123,77 @@ package org.robotlegs.utilities.variance.base
 		
 		public function hasMediator(mediator:IMediator):Boolean
 		{
-			var mediatorName:String = createMediatorName(mediator.getViewComponent(), reflector.getClass(mediator));
+			const mediatorName:String = createMediatorName(mediator.getViewComponent(), reflector.getClass(mediator));
 			return mediatorName in mediatorMap;
 		}
 		
 		public function hasMediatorForView(viewComponent:Object):Boolean
 		{
 			return getMediators(viewComponent).length > 0;
+		}
+		
+		protected const singleton:* = getDefinitionByName('mx.core.Singleton');
+		
+		override protected function addListeners():void
+		{
+			super.addListeners();
+			
+			const manager:* = getPopupManager();
+			if(manager)
+			{
+				// The PopUpManager dispatches the 'addPopUp' event just
+				// before it adds the popup to the SystemManager's ChildList.
+				manager.addEventListener('addPopUp', onPopupAdded, false, 50);
+			}
+		}
+		
+		override protected function removeListeners():void
+		{
+			super.removeListeners();
+			
+			const manager:* = getPopupManager();
+			if(manager)
+			{
+				manager.removeEventListener('addPopUp', onPopupAdded);
+			}
+		}
+		
+		protected function onPopupAdded(event:* /*Request*/):void
+		{
+			// 'event' is an mx.events.Request.
+			// Its value has a reference to the SystemManager 
+			const sm:DisplayObject = event.value.sm;
+			
+			// The next component added to the SystemManager is the new popup.
+			sm.addEventListener(Event.ADDED, function(evt:Event):void {
+				sm.removeEventListener(evt.type, arguments.callee);
+				
+				const view:IEventDispatcher = evt.target as IEventDispatcher;
+				
+				// Register mediators for the new popup.
+				onViewAdded(evt);
+				
+				// Listen for add/removes of the popup's children.
+				view.addEventListener(Event.ADDED_TO_STAGE, onViewAdded, useCapture, 0, true);
+				view.addEventListener(Event.REMOVED_FROM_STAGE, onViewRemoved, useCapture, 0, true);
+				
+				// Listen for when the popup is removed, so we can remove its mediators.
+				view.addEventListener(Event.REMOVED, function(e:Event):void {
+					if(e.eventPhase != EventPhase.AT_TARGET)
+						return;
+					
+					view.removeEventListener(e.type, arguments.callee);
+					onViewRemoved(e);
+				});
+			});
+		}
+		
+		protected function getPopupManager():*
+		{
+			if(!singleton)
+				return null;
+			
+			return singleton.getInstance('mx.managers::IPopUpManager');
 		}
 		
 		override protected function onViewAdded(e:Event):void
