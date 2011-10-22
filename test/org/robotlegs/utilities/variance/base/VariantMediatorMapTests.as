@@ -7,7 +7,7 @@
 
 package org.robotlegs.utilities.variance.base
 {
-	import flash.display.DisplayObjectContainer;
+	import flash.display.*;
 	import flash.events.*;
 	
 	import mx.core.UIComponent;
@@ -63,6 +63,7 @@ package org.robotlegs.utilities.variance.base
 		public function runAfterEachTest():void
 		{
 			UIImpersonator.removeAllChildren();
+			mediatorMap.enabled = false;
 			injector.unmap(IMediatorMap);
 			injector.unmap(IVariantMediatorMap);
 		}
