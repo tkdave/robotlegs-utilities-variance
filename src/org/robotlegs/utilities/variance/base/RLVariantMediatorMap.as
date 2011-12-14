@@ -132,7 +132,14 @@ package org.robotlegs.utilities.variance.base
 			return getMediators(viewComponent).length > 0;
 		}
 		
-		protected const singleton:* = getDefinitionByName('mx.core.Singleton');
+		protected const singleton:* = (function():*{
+			try {
+				return getDefinitionByName('mx.core.Singleton');
+			} catch ( e:ReferenceError ) {
+				// Flex-less
+				return null;
+			}
+		})();
 		
 		override protected function addListeners():void
 		{

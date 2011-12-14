@@ -15,7 +15,7 @@
 			
 			/*embedded just for fun*/
 			[Bindable]
-			[Embed(source="../build/assets/rl_justlegs.png")]
+			[Embed(source="/../build/assets/rl_justlegs.png")]
 			private var Logo:Class;
 			
 			private function onCreationComplete():void
